@@ -1,0 +1,185 @@
+if ("serial" in navigator) {
+    let port;
+    let reader;
+    let mode = "learning";  // Default mode
+    let currentLetterIndex = 0;
+    let correctInputs = 0;
+    let totalInputs = 0;
+
+    const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+    const words = ["bat", "cat", "moon", "star", "tree", "bee", "sun", "ice"];
+    let currentWordIndex = 0;
+    let currentWordLetterIndex = 0;
+    const alphabetFolds = {
+        "a": "1",
+        "b": "1 and 2",
+        "c": "1 and 4",
+        "d": "1, 4, and 5",
+        "e": "1 and 5",
+        "f": "1, 2 and 4",
+        "g": "1, 2, 4, and 5",
+        "h": "1, 2, and 5",
+        "i": "2 and 4",
+        "j": "2, 4, and 5",
+        "k": "1 and 3",
+        "l": "1, 2, and 3",
+        "m": "1, 3, and 4",
+        "n": "1, 3, 4, and 5",
+        "o": "1, 3, and 5",
+        "p": "1, 2, 3,and 4",
+        "q": "1, 2, 3, 4, and 5",
+        "r": "1, 2, 3,and 5",
+        "s": "2, 3,and 4",
+        "t": "2, 3, 4, and 5",
+        "u": "1, 3, and 6",
+        "v": "1, 2, 3, and 6",
+        "w": "2, 4, 5, and 6",
+        "x": "1, 3, 4, and 6",
+        "y": "1, 3, 4, 5, and 6",
+        "z": "1, 3, 5, and 6"
+    };
+
+    let progressChart;
+
+    async function connectToSerial() {
+        try {
+            port = await navigator.serial.requestPort();
+            await port.open({ baudRate: 9600 });
+
+            const decoder = new TextDecoderStream();
+            const inputDone = port.readable.pipeTo(decoder.writable);
+            reader = decoder.readable.getReader();
+
+            readSerialData();
+        } catch (error) {
+            console.error("Failed to connect to serial port:", error);
+        }
+    }
+
+    async function readSerialData() {
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) {
+                console.log("Reader closed");
+                reader.releaseLock();
+                break;
+            }
+            if (value) {
+                handleBrailleInput(value.trim());
+            }
+        }
+    }
+
+    function handleBrailleInput(data) {
+        let outputText = "";
+
+        if (mode === "learning") {
+            outputText = handleLearningMode(data);
+        } else if (mode === "practice") {
+            outputText = handlePracticeInput(data);
+        }
+
+        document.getElementById("brailleOutput").textContent = outputText;
+    }
+
+    function handleLearningMode(data) {
+        const currentLetter = alphabet[currentLetterIndex];
+        if (data === currentLetter) {
+            speakCharacter("Great! You folded " + currentLetter.toUpperCase() + " correctly.");
+            correctInputs++;
+            currentLetterIndex++;
+            if (currentLetterIndex < alphabet.length) {
+                const nextLetter = alphabet[currentLetterIndex];
+                speakCharacter("Now fold " + nextLetter.toUpperCase() + ". Fold " + alphabetFolds[nextLetter] + ".");
+            } else {
+                speakCharacter("Congrats! You have completed learning the alphabet. Let's try forming words in practice mode.");
+                mode = "practice";
+            }
+        } else {
+            speakCharacter("Incorrect! Fold " + alphabetFolds[currentLetter] + " for " + currentLetter.toUpperCase() + ".");
+        }
+
+        totalInputs++;
+        updateProgressChart();
+        return currentLetter.toUpperCase();
+    }
+
+    function handlePracticeInput(data) {
+        const currentWord = words[currentWordIndex];
+        const currentLetter = currentWord[currentWordLetterIndex];
+
+        if (data === currentLetter) {
+            currentWordLetterIndex++;
+            speakCharacter(currentLetter.toUpperCase() + " is correct.");
+
+            if (currentWordLetterIndex === currentWord.length) {
+                speakCharacter("Great! You completed the word " + currentWord.toUpperCase());
+                currentWordIndex = (currentWordIndex + 1) % words.length;
+                currentWordLetterIndex = 0;
+                speakCharacter("Next word is " + words[currentWordIndex].toUpperCase());
+            }
+        } else {
+            speakCharacter("Incorrect, start over.");
+            currentWordLetterIndex = 0;
+        }
+
+        totalInputs++;
+        updateProgressChart();
+        return currentWord.substring(0, currentWordLetterIndex).toUpperCase();
+    }
+
+    function speakCharacter(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function initProgressChart() {
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        progressChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Accuracy (%)',
+                    data: [],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+
+    function updateProgressChart() {
+        if (totalInputs > 0) {
+            const accuracy = (correctInputs / totalInputs) * 100;
+            progressChart.data.labels.push(totalInputs.toString());
+            progressChart.data.datasets[0].data.push(accuracy.toFixed(2));
+            progressChart.update();
+        }
+    }
+
+    document.getElementById("connectBtn").addEventListener("click", connectToSerial);
+    document.getElementById("modeSelect").addEventListener("change", (event) => {
+        mode = event.target.value;
+        document.getElementById("brailleOutput").textContent = "";
+        currentLetterIndex = 0;
+        correctInputs = 0;
+        totalInputs = 0;
+        progressChart.data.labels = [];
+        progressChart.data.datasets[0].data = [];
+        progressChart.update();
+    });
+
+    initProgressChart();
+} else {
+    alert("Web Serial API not supported in this browser.");
+}
