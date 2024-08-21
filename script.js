@@ -40,7 +40,7 @@ if ("serial" in navigator) {
       // Add logic to translate the received data into Braille characters
       // For example, if data matches a certain pattern, display a letter
       let brailleCharacter = ""; // Initialize with the corresponding character
-      if (data.trim() === "g") {
+      if (data.trim() === "a") {
         brailleCharacter = "A";
         speakCharacter(brailleCharacter);
       }
