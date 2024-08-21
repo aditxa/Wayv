@@ -2,42 +2,47 @@ body {
     font-family: Arial, sans-serif;
     text-align: center;
     padding: 20px;
-  }
-  
-  .container {
+}
+
+.container {
     display: flex;
     height: 80vh; /* Adjust as necessary */
     margin-top: 20px;
-  }
-  
-  #practiceBox, #progressBox {
+}
+
+#practiceBox, #progressBox {
     border: 1px solid #ccc;
     padding: 20px;
     box-sizing: border-box;
-  }
-  
-  #practiceBox {
+}
+
+#practiceBox {
     flex: 3;
     background-color: #f9f9f9;
-  }
-  
-  #progressBox {
+}
+
+#progressBox {
     flex: 2;
     background-color: #e9e9e9;
-  }
-  
-  #brailleOutput, #progressOutput {
+}
+
+#brailleOutput, #userInputsOutput {
+    font-size: 48px; /* Bigger font size */
+    font-weight: bold; /* Bold font */
+    margin-top: 20px;
+}
+
+#progressOutput {
     font-size: 24px;
     margin-top: 20px;
-  }
-  
-  @media (max-width: 600px) {
+}
+
+@media (max-width: 600px) {
     #brailleOutput, #progressOutput {
         font-size: 18px;
     }
-  
+
     .container {
         flex-direction: column;
     }
-  }
-  
+}
