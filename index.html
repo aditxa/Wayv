@@ -1,16 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Learn Alphabets</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Braille Learning Website</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Let's Learn!</h1>
-    <div id="alphabet"></div>
-    <div class="buttons">
-        <button id="prev">Previous</button>
-        <button id="next">Next</button>
+  <h1>Braille Learning Tool</h1>
+  <button id="connectBtn">Connect to Arduino</button>
+
+  <div class="container">
+    <div id="practiceBox">
+      <h2>Practice Mode</h2>
+      <div id="brailleOutput">Braille character will appear here</div>
     </div>
-    <script src="script.js"></script>
+    <div id="progressBox">
+      <h2>Progress Rate</h2>
+      <div id="progressOutput">Progress data will appear here</div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
