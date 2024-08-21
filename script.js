@@ -1,23 +1,60 @@
-let alphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-let index = 0;
-let synth = window.speechSynthesis;
+// Check if the Web Serial API is supported
+if ("serial" in navigator) {
+    let port;
+    let reader;
 
-document.getElementById('alphabet').innerText = alphabets[index];
-speak(alphabets[index]);
+    async function connectToSerial() {
+      try {
+        // Request a port and open a connection
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
 
-document.getElementById('next').addEventListener('click', function() {
-    index = (index + 1) % alphabets.length;
-    document.getElementById('alphabet').innerText = alphabets[index];
-    speak(alphabets[index]);
-});
+        // Create a reader to read the incoming data
+        const decoder = new TextDecoderStream();
+        const inputDone = port.readable.pipeTo(decoder.writable);
+        reader = decoder.readable.getReader();
 
-document.getElementById('prev').addEventListener('click', function() {
-    index = (index - 1 + alphabets.length) % alphabets.length;
-    document.getElementById('alphabet').innerText = alphabets[index];
-    speak(alphabets[index]);
-});
+        // Continuously read data from the serial port
+        readSerialData();
+      } catch (error) {
+        console.error("Failed to connect to serial port:", error);
+      }
+    }
 
-function speak(text) {
-    let utterThis = new SpeechSynthesisUtterance(text);
-    synth.speak(utterThis);
-}
+    async function readSerialData() {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          console.log("Reader closed");
+          reader.releaseLock();
+          break;
+        }
+        if (value) {
+          handleBrailleInput(value);
+        }
+      }
+    }
+
+    function handleBrailleInput(data) {
+      console.log("Received data:", data);
+      // Add logic to translate the received data into Braille characters
+      // For example, if data matches a certain pattern, display a letter
+      let brailleCharacter = ""; // Initialize with the corresponding character
+      if (data.trim() === "g") {
+        brailleCharacter = "A";
+        speakCharacter(brailleCharacter);
+      }
+      // Add other cases for different Braille letters
+
+      document.getElementById("brailleOutput").textContent = brailleCharacter;
+    }
+
+    function speakCharacter(character) {
+      const utterance = new SpeechSynthesisUtterance(character);
+      window.speechSynthesis.speak(utterance);
+    }
+
+    document.getElementById("connectBtn").addEventListener("click", connectToSerial);
+  } else {
+    alert("Web Serial API not supported in this browser.");
+  }
