@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Braille Learning Website</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js -->
 </head>
 <body>
   <h1>Braille Learning Tool</h1>
@@ -12,12 +13,18 @@
 
   <div class="container">
     <div id="practiceBox">
-      <h2>Practice Mode</h2>
+      <h2>Braille Learning Tool</h2>
+      <label for="modeSelect">Select Mode:</label>
+      <select id="modeSelect">
+        <option value="learning">Learning Mode</option>
+        <option value="practice">Practice Mode</option>
+      </select>
       <div id="brailleOutput">Braille character will appear here</div>
+      <div id="userInputsOutput">User inputs will appear here</div>
     </div>
     <div id="progressBox">
       <h2>Progress Rate</h2>
-      <div id="progressOutput">Progress data will appear here</div>
+      <canvas id="progressChart"></canvas> <!-- Updated to use a canvas element for Chart.js -->
     </div>
   </div>
 
