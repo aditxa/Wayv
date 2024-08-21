@@ -14,7 +14,7 @@ void setup()
   digitalWrite(buzzer,HIGH);
 
   delay(1000);
-  digitalWrite(buzzer,HIGH);
+  digitalWrite(buzzer,LOW);
    digitalWrite(ledd,HIGH);
  Serial.begin(9600 );
  //Serial.println("Initialize MPU6050");
@@ -172,7 +172,7 @@ void loop()
   {
    Serial.print("a");digitalWrite(buzzer,HIGH); 
   }
-  delay(200);digitalWrite(buzzer,HIGH);
+  delay(200);digitalWrite(buzzer,LOW);
 }
 
 void ff()
