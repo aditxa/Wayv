@@ -1,14 +1,43 @@
 if ("serial" in navigator) {
     let port;
     let reader;
-    let mode = "learning";
-    let currentWord = "";
+    let mode = "learning";  // Default mode
     let currentLetterIndex = 0;
-    let userInputs = [];
     let correctInputs = 0;
     let totalInputs = 0;
 
-    const practiceWords = ["cat", "dog", "bat", "rat", "sun", "moon", "star"];
+    const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+    const words = ["bat", "cat", "moon", "star", "tree", "bee", "sun", "ice"];
+    let currentWordIndex = 0;
+    let currentWordLetterIndex = 0;
+    const alphabetFolds = {
+        "a": "1",
+        "b": "1 and 2",
+        "c": "1 and 4",
+        "d": "1, 4, and 5",
+        "e": "1 and 5",
+        "f": "1, 2 and 4",
+        "g": "1, 2, 4, and 5",
+        "h": "1, 2, and 5",
+        "i": "2 and 4",
+        "j": "2, 4, and 5",
+        "k": "1 and 3",
+        "l": "1, 2, and 3",
+        "m": "1, 3, and 4",
+        "n": "1, 3, 4, and 5",
+        "o": "1, 3, and 5",
+        "p": "1, 2, 3,and 4",
+        "q": "1, 2, 3, 4, and 5",
+        "r": "1, 2, 3,and 5",
+        "s": "2, 3,and 4",
+        "t": "2, 3, 4, and 5",
+        "u": "1, 3, and 6",
+        "v": "1, 2, 3, and 6",
+        "w": "2, 4, 5, and 6",
+        "x": "1, 3, 4, and 6",
+        "y": "1, 3, 4, 5, and 6",
+        "z": "1, 3, 5, and 6"
+    };
 
     let progressChart;
 
@@ -45,7 +74,7 @@ if ("serial" in navigator) {
         let outputText = "";
 
         if (mode === "learning") {
-            outputText = handleLetterInput(data);
+            outputText = handleLearningMode(data);
         } else if (mode === "practice") {
             outputText = handlePracticeInput(data);
         }
@@ -53,70 +82,64 @@ if ("serial" in navigator) {
         document.getElementById("brailleOutput").textContent = outputText;
     }
 
-    function handleLetterInput(data) {
-        const brailleMap = {
-            "a": "A", "b": "B", "c": "C", "d": "D", "e": "E",
-            "f": "F", "g": "G", "h": "H", "i": "I", "j": "J",
-            "k": "K", "l": "L", "m": "M", "n": "N", "o": "O",
-            "p": "P", "q": "Q", "r": "R", "s": "S", "t": "T",
-            "u": "U", "v": "V", "w": "W", "x": "X", "y": "Y",
-            "z": "Z"
-        };
-
-        const brailleCharacter = brailleMap[data] || "";
-        if (brailleCharacter) {
-            speakCharacter(brailleCharacter);
+    function handleLearningMode(data) {
+        const currentLetter = alphabet[currentLetterIndex];
+        if (data === currentLetter) {
+            speakCharacter("Great! You folded " + currentLetter.toUpperCase() + " correctly.");
+            correctInputs++;
+            currentLetterIndex++;
+            if (currentLetterIndex < alphabet.length) {
+                const nextLetter = alphabet[currentLetterIndex];
+                speakCharacter("Now fold " + nextLetter.toUpperCase() + ". Fold " + alphabetFolds[nextLetter] + ".");
+            } else {
+                speakCharacter("Congrats! You have completed learning the alphabet. Let's try forming words in practice mode.");
+                mode = "practice";
+            }
+        } else {
+            speakCharacter("Incorrect! Fold " + alphabetFolds[currentLetter] + " for " + currentLetter.toUpperCase() + ".");
         }
-        return brailleCharacter;
+
+        totalInputs++;
+        updateProgressChart();
+        return currentLetter.toUpperCase();
     }
 
     function handlePracticeInput(data) {
-        if (!currentWord) {
-            currentWord = practiceWords[Math.floor(Math.random() * practiceWords.length)].toUpperCase();
-            currentLetterIndex = 0;
-            document.getElementById("brailleOutput").textContent = currentWord;
-            speakCharacter(currentWord, true);
-            userInputs = [];
-            updateUserInputsDisplay();
-        } else {
-            const expectedLetter = currentWord[currentLetterIndex];
-            totalInputs++;
-            if (data.toUpperCase() === expectedLetter) {
-                correctInputs++;
-                speakCharacter(expectedLetter);
-                currentLetterIndex++;
-                if (currentLetterIndex >= currentWord.length) {
-                    currentWord = "";
-                    currentLetterIndex = 0;
-                }
+        const currentWord = words[currentWordIndex];
+        const currentLetter = currentWord[currentWordLetterIndex];
+
+        // Display the current word on the screen
+        document.getElementById("brailleOutput").textContent = currentWord.toUpperCase();
+
+        if (data === currentLetter) {
+            currentWordLetterIndex++;
+            speakCharacter(currentLetter.toUpperCase());
+
+            if (currentWordLetterIndex === currentWord.length) {
+                speakCharacter("Great! You completed the word " + currentWord.toUpperCase());
+                currentWordIndex = (currentWordIndex + 1) % words.length;
+                currentWordLetterIndex = 0;
+                speakCharacter("Next word is " + words[currentWordIndex].toUpperCase());
             }
-            userInputs.push(data.toUpperCase());
-            updateUserInputsDisplay();
-            updateProgressChart(); // Update the progress chart with each input
-        }
-        return currentWord;
-    }
-
-    function updateUserInputsDisplay() {
-        document.getElementById("userInputsOutput").textContent = userInputs.join(" ");
-    }
-
-    function speakCharacter(text, spellOut = false) {
-        if (spellOut) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.onend = () => {
-                text.split("").forEach((char, index) => {
-                    setTimeout(() => {
-                        const letterUtterance = new SpeechSynthesisUtterance(char);
-                        window.speechSynthesis.speak(letterUtterance);
-                    }, index * 600);
-                });
-            };
-            window.speechSynthesis.speak(utterance);
         } else {
-            const utterance = new SpeechSynthesisUtterance(text);
-            window.speechSynthesis.speak(utterance);
+            speakCharacter(data.toUpperCase() + ", Incorrect, start over.");
+            currentWordLetterIndex = 0; // Reset word index if incorrect
         }
+
+        // Always update the word display (e.g., partially completed)
+        document.getElementById("brailleOutput").textContent = currentWord.substring(0, currentWordLetterIndex).toUpperCase();
+
+        totalInputs++;
+        updateProgressChart();
+
+        return currentWord.substring(0, currentWordLetterIndex).toUpperCase();
+    }
+
+
+
+    function speakCharacter(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        window.speechSynthesis.speak(utterance);
     }
 
     function initProgressChart() {
@@ -124,10 +147,10 @@ if ("serial" in navigator) {
         progressChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: [], // x-axis labels
+                labels: [],
                 datasets: [{
                     label: 'Accuracy (%)',
-                    data: [], // y-axis data
+                    data: [],
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1
@@ -157,18 +180,15 @@ if ("serial" in navigator) {
     document.getElementById("modeSelect").addEventListener("change", (event) => {
         mode = event.target.value;
         document.getElementById("brailleOutput").textContent = "";
-        currentWord = "";
         currentLetterIndex = 0;
-        userInputs = [];
         correctInputs = 0;
         totalInputs = 0;
-        updateUserInputsDisplay();
         progressChart.data.labels = [];
         progressChart.data.datasets[0].data = [];
         progressChart.update();
     });
 
-    initProgressChart(); // Initialize the chart on page load
+    initProgressChart();
 } else {
     alert("Web Serial API not supported in this browser.");
 }
