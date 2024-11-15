@@ -119,6 +119,7 @@ if ("serial" in navigator) {
                     this.speak("Congratulations! You have completed learning the alphabet. Let's try forming words in practice mode.");
                     this.mode = "practice";
                     document.getElementById("modeSelect").value = "practice";
+                    this.announceCurrentWord();
                 }
             } else {
                 this.speak(`Incorrect! Fold ${this.alphabetFolds[currentLetter]} for ${currentLetter.toUpperCase()}.`);
@@ -142,16 +143,39 @@ if ("serial" in navigator) {
                     this.speak(`Great! You completed the word ${currentWord.toUpperCase()}`);
                     this.currentWordIndex = (this.currentWordIndex + 1) % this.words.length;
                     this.currentWordLetterIndex = 0;
-                    this.speak(`Next word is ${this.words[this.currentWordIndex].toUpperCase()}`);
+                    setTimeout(() => this.announceCurrentWord(), 2000);
                 }
             } else {
                 this.speak(`${data.toUpperCase()}, Incorrect, start over.`);
                 this.currentWordLetterIndex = 0;
+                setTimeout(() => this.announceCurrentWord(), 2000);
             }
 
             this.totalInputs++;
             this.updateProgressChart();
             return currentWord.substring(0, this.currentWordLetterIndex).toUpperCase();
+        }
+
+        announceCurrentWord() {
+            const currentWord = this.words[this.currentWordIndex];
+            const letters = currentWord.toUpperCase().split('');
+            
+            // First announce the full word
+            this.speak(`Let's practice the word ${currentWord.toUpperCase()}`);
+            
+            // Then announce each letter with a delay
+            letters.forEach((letter, index) => {
+                setTimeout(() => {
+                    this.speak(letter);
+                    
+                    // If it's the last letter, announce the folding instructions
+                    if (index === letters.length - 1) {
+                        setTimeout(() => {
+                            this.speak(`Fold ${this.alphabetFolds[currentWord[0]]} for ${currentWord[0].toUpperCase()}`);
+                        }, 1000);
+                    }
+                }, (index + 1) * 1000);
+            });
         }
 
         speak(text) {
@@ -178,7 +202,7 @@ if ("serial" in navigator) {
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         borderColor: 'rgba(75, 192, 192, 1)',
                         borderWidth: 1,
-                        tension: 0.4 // Smooth line
+                        tension: 0.4
                     }]
                 },
                 options: {
@@ -207,7 +231,6 @@ if ("serial" in navigator) {
             if (this.totalInputs > 0) {
                 const accuracy = (this.correctInputs / this.totalInputs) * 100;
                 
-                // Keep only the last 20 data points for better visualization
                 if (this.progressChart.data.labels.length > 20) {
                     this.progressChart.data.labels.shift();
                     this.progressChart.data.datasets[0].data.shift();
@@ -248,6 +271,10 @@ if ("serial" in navigator) {
             this.progressChart.update();
             
             this.updateDisplay("");
+
+            if (this.mode === "practice") {
+                this.announceCurrentWord();
+            }
         }
 
         initializeEventListeners() {
@@ -257,11 +284,9 @@ if ("serial" in navigator) {
                 this.mode = event.target.value;
                 this.resetState();
                 
-                const message = this.mode === "learning" 
-                    ? `Let's start with the letter ${this.alphabet[0].toUpperCase()}. Fold ${this.alphabetFolds[this.alphabet[0]]}.`
-                    : `Let's practice with the word ${this.words[0].toUpperCase()}`;
-                
-                this.speak(message);
+                if (this.mode === "learning") {
+                    this.speak(`Let's start with the letter ${this.alphabet[0].toUpperCase()}. Fold ${this.alphabetFolds[this.alphabet[0]]}.`);
+                }
             });
         }
     }
