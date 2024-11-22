@@ -8,6 +8,8 @@ if ("serial" in navigator) {
             this.correctInputs = 0;
             this.totalInputs = 0;
             this.progressChart = null;
+            this.recognition = null;
+            this.isListening = false;
 
             // Constants
             this.alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
@@ -47,6 +49,72 @@ if ("serial" in navigator) {
 
             this.initializeEventListeners();
             this.initProgressChart();
+            this.initializeSpeechRecognition();
+        }
+
+        initializeSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                this.recognition = new webkitSpeechRecognition();
+                this.recognition.continuous = true;
+                this.recognition.interimResults = false;
+                this.recognition.lang = 'en-US';
+
+                this.recognition.onresult = (event) => {
+                    const last = event.results.length - 1;
+                    const command = event.results[last][0].transcript.trim().toLowerCase();
+                    
+                    if (command.includes("learning mode") || command.includes("learning")) {
+                        this.switchMode("learning");
+                        this.speak("Switching to learning mode");
+                    } else if (command.includes("practice mode") || command.includes("practice")) {
+                        this.switchMode("practice");
+                        this.speak("Switching to practice mode");
+                    }
+                };
+
+                this.recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    this.showStatus(`Speech recognition error: ${event.error}`);
+                };
+
+                this.recognition.onend = () => {
+                    if (this.isListening) {
+                        this.recognition.start();
+                    }
+                };
+            } else {
+                console.error('Speech Recognition is not supported');
+                this.showStatus('Speech Recognition is not supported in this browser');
+            }
+        }
+
+        startListening() {
+            if (this.recognition && !this.isListening) {
+                this.isListening = true;
+                this.recognition.start();
+                this.showStatus("Voice commands activated");
+                this.speak("Voice commands are now active. You can say 'learning mode' or 'practice mode' to switch modes.");
+            }
+        }
+
+        stopListening() {
+            if (this.recognition && this.isListening) {
+                this.isListening = false;
+                this.recognition.stop();
+                this.showStatus("Voice commands deactivated");
+            }
+        }
+
+        switchMode(newMode) {
+            this.mode = newMode;
+            document.getElementById("modeSelect").value = newMode;
+            this.resetState();
+            
+            if (this.mode === "learning") {
+                this.speak(`Let's start with the letter ${this.alphabet[0].toUpperCase()}. Fold ${this.alphabetFolds[this.alphabet[0]]}.`);
+            } else if (this.mode === "practice") {
+                setTimeout(() => this.announceCurrentWord(), 1000);
+            }
         }
 
         async connectToSerial() {
@@ -59,7 +127,9 @@ if ("serial" in navigator) {
                 this.reader = decoder.readable.getReader();
 
                 this.showStatus("Connected successfully!");
+                this.speak("Connected successfully! Starting voice commands.");
                 this.readSerialData();
+                this.startListening(); // Start listening for voice commands after serial connection
             } catch (error) {
                 this.showStatus(`Connection failed: ${error.message}`);
                 console.error("Failed to connect to serial port:", error);
@@ -372,12 +442,7 @@ if ("serial" in navigator) {
             document.getElementById("connectBtn").addEventListener("click", () => this.connectToSerial());
             
             document.getElementById("modeSelect").addEventListener("change", (event) => {
-                this.mode = event.target.value;
-                this.resetState();
-                
-                if (this.mode === "learning") {
-                    this.speak(`Let's start with the letter ${this.alphabet[0].toUpperCase()}. Fold ${this.alphabetFolds[this.alphabet[0]]}.`);
-                }
+                this.switchMode(event.target.value);
             });
         }
     }
