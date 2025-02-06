@@ -1,185 +1,386 @@
-if ("serial" in navigator) {
-    let port;
-    let reader;
-    let mode = "learning";  // Default mode
-    let currentLetterIndex = 0;
-    let correctInputs = 0;
-    let totalInputs = 0;
+#define adc1 A5
+#define adc2 A4
+#define adc3 A3
+#define adc4 A2
+#define adc5 A1
+#define adc6 A0
+#define buzzer 11
+#define ledd 13
+#define m1 7
+#define m2 6
+#define m3 5
+#define m4 4
+#define m5 3
+#define m6 2
+#define mod 8
+int flex2=0,flex1=0,flex3=0,flex4=0,flex5=0,flex6=0,swt;
+void setup() 
+{  
+ pinMode(mod,INPUT_PULLUP);
+ pinMode(ledd,OUTPUT);
+  pinMode(buzzer,OUTPUT);
+  pinMode(m1,OUTPUT);
+  pinMode(m2,OUTPUT);
+  pinMode(m3,OUTPUT);
+  pinMode(m4,OUTPUT);
+  pinMode(m5,OUTPUT);
+  pinMode(m6,OUTPUT);
+  digitalWrite(buzzer,HIGH);
+  delay(1000);
+  digitalWrite(buzzer,LOW);
+   digitalWrite(ledd,HIGH);
+ Serial.begin(9600 );
+ //Serial.println("Initialize MPU6050");
+}
+void loop()
+{
+  flex1=analogRead(adc1);
+  flex2=analogRead(adc2);
+  flex3=analogRead(adc3);
+  flex4=analogRead(adc4);
+  flex5=analogRead(adc5);
+  flex6=analogRead(adc6);
+  delay(10);
+ //ff();
+  swt=digitalRead(mod);
+  if(swt==LOW)
+  {
+   digitalWrite(ledd,HIGH);
+   single();
+  }
+  else
+  {
+   digitalWrite(ledd,LOW);
+   if((flex1>900)&&(flex2>900)&&(flex3>900)&&(flex4>900)&&(flex5>900)&&(flex6>900))
+   {
+    digitalWrite(buzzer,HIGH);
+    digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+    digitalWrite(m5,HIGH);
+    digitalWrite(m6,HIGH);
+   Serial.println("");
+  }
+  
+  else if((flex1>900)&&(flex3>900)&&(flex4>900)&&(flex5>900)&&(flex6>900))
+  {
+   Serial.print("y");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+    digitalWrite(m5,HIGH);
+    digitalWrite(m6,HIGH);
+  }
+  
+  else if((flex1>900)&&(flex2>900)&&(flex3>900)&&(flex4>900)&&(flex5>900))
+  {
+   Serial.print("q");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+    digitalWrite(m5,HIGH);
+  }
 
-    const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
-    const words = ["bat", "cat", "moon", "star", "tree", "bee", "sun", "ice"];
-    let currentWordIndex = 0;
-    let currentWordLetterIndex = 0;
-    const alphabetFolds = {
-        "a": "1",
-        "b": "1 and 2",
-        "c": "1 and 4",
-        "d": "1, 4, and 5",
-        "e": "1 and 5",
-        "f": "1, 2 and 4",
-        "g": "1, 2, 4, and 5",
-        "h": "1, 2, and 5",
-        "i": "2 and 4",
-        "j": "2, 4, and 5",
-        "k": "1 and 3",
-        "l": "1, 2, and 3",
-        "m": "1, 3, and 4",
-        "n": "1, 3, 4, and 5",
-        "o": "1, 3, and 5",
-        "p": "1, 2, 3,and 4",
-        "q": "1, 2, 3, 4, and 5",
-        "r": "1, 2, 3,and 5",
-        "s": "2, 3,and 4",
-        "t": "2, 3, 4, and 5",
-        "u": "1, 3, and 6",
-        "v": "1, 2, 3, and 6",
-        "w": "2, 4, 5, and 6",
-        "x": "1, 3, 4, and 6",
-        "y": "1, 3, 4, 5, and 6",
-        "z": "1, 3, 5, and 6"
-    };
+  else if((flex1>900)&&(flex3>900)&&(flex5>900)&&(flex6>900))
+  {
+   Serial.print("z");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m5,HIGH);
+    digitalWrite(m6,HIGH);
+  }
 
-    let progressChart;
+  else if((flex1>900)&&(flex3>900)&&(flex4>900)&&(flex6>900))
+  {
+   Serial.print("x");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+    digitalWrite(m6,HIGH);
+  }
 
-    async function connectToSerial() {
-        try {
-            port = await navigator.serial.requestPort();
-            await port.open({ baudRate: 9600 });
+  else if((flex2>900)&&(flex4>900)&&(flex5>900)&&(flex6>900))
+  {
+   Serial.print("w");digitalWrite(buzzer,HIGH);
+    digitalWrite(m2,HIGH);
 
-            const decoder = new TextDecoderStream();
-            const inputDone = port.readable.pipeTo(decoder.writable);
-            reader = decoder.readable.getReader();
+    digitalWrite(m4,HIGH);
+    digitalWrite(m5,HIGH);
+    digitalWrite(m6,HIGH);
+  }
+  
+  else if((flex1>900)&&(flex2>900)&&(flex3>900)&&(flex6>900))
+  {
+   Serial.print("v");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m6,HIGH);
+  }
 
-            readSerialData();
-        } catch (error) {
-            console.error("Failed to connect to serial port:", error);
-        }
-    }
+  else if((flex2>900)&&(flex3>900)&&(flex4>900)&&(flex5>900))
+  {
+   Serial.print("t");digitalWrite(buzzer,HIGH);
+ 
+    digitalWrite(m2,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+    digitalWrite(m5,HIGH);
+  }
 
-    async function readSerialData() {
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) {
-                console.log("Reader closed");
-                reader.releaseLock();
-                break;
-            }
-            if (value) {
-                handleBrailleInput(value.trim());
-            }
-        }
-    }
+  else if((flex1>900)&&(flex2>900)&&(flex3>900)&&(flex5>900))
+  {
+   Serial.print("r");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
+    digitalWrite(m3,HIGH); 
+    digitalWrite(m5,HIGH);
+  } 
 
-    function handleBrailleInput(data) {
-        let outputText = "";
+  else if((flex1>900)&&(flex2>900)&&(flex3>900)&&(flex4>900))
+  {
+   Serial.print("p");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+  }
 
-        if (mode === "learning") {
-            outputText = handleLearningMode(data);
-        } else if (mode === "practice") {
-            outputText = handlePracticeInput(data);
-        }
+  else if((flex1>900)&&(flex3>900)&&(flex4>900)&&(flex5>900))
+  {
+   Serial.print("n");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+    digitalWrite(m5,HIGH);
+   
+  }
 
-        document.getElementById("brailleOutput").textContent = outputText;
-    }
+  else if((flex1>900)&&(flex2>900)&&(flex4>900)&&(flex5>900))
+  {
+   Serial.print("g");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
+    digitalWrite(m4,HIGH);
+    digitalWrite(m5,HIGH);
+  }
 
-    function handleLearningMode(data) {
-        const currentLetter = alphabet[currentLetterIndex];
-        if (data === currentLetter) {
-            speakCharacter("Great! You folded " + currentLetter.toUpperCase() + " correctly.");
-            correctInputs++;
-            currentLetterIndex++;
-            if (currentLetterIndex < alphabet.length) {
-                const nextLetter = alphabet[currentLetterIndex];
-                speakCharacter("Now fold " + nextLetter.toUpperCase() + ". Fold " + alphabetFolds[nextLetter] + ".");
-            } else {
-                speakCharacter("Congrats! You have completed learning the alphabet. Let's try forming words in practice mode.");
-                mode = "practice";
-            }
-        } else {
-            speakCharacter("Incorrect! Fold " + alphabetFolds[currentLetter] + " for " + currentLetter.toUpperCase() + ".");
-        }
+   else if((flex1>900)&&(flex4>900)&&(flex5>900))
+  {
+   Serial.print("d");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m4,HIGH);
+    digitalWrite(m5,HIGH);
+  }
+  
+  else if((flex1>900)&&(flex2>900)&&(flex4>900))
+  {
+   Serial.print("f");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
 
-        totalInputs++;
-        updateProgressChart();
-        return currentLetter.toUpperCase();
-    }
+    digitalWrite(m4,HIGH);
 
-    function handlePracticeInput(data) {
-        const currentWord = words[currentWordIndex];
-        const currentLetter = currentWord[currentWordLetterIndex];
+  }
+  
+  else if((flex1>900)&&(flex2>900)&&(flex5>900))
+  {
+   Serial.print("h");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
 
-        if (data === currentLetter) {
-            currentWordLetterIndex++;
-            speakCharacter(currentLetter.toUpperCase() + " is correct.");
+    digitalWrite(m5,HIGH);
 
-            if (currentWordLetterIndex === currentWord.length) {
-                speakCharacter("Great! You completed the word " + currentWord.toUpperCase());
-                currentWordIndex = (currentWordIndex + 1) % words.length;
-                currentWordLetterIndex = 0;
-                speakCharacter("Next word is " + words[currentWordIndex].toUpperCase());
-            }
-        } else {
-            speakCharacter("Incorrect, start over.");
-            currentWordLetterIndex = 0;
-        }
+  }
+  
+  else if((flex2>900)&&(flex4>900)&&(flex5>900))
+  {
+   Serial.print("j");digitalWrite(buzzer,HIGH);
+    digitalWrite(m2,HIGH);
+   
+    digitalWrite(m4,HIGH);
+    digitalWrite(m5,HIGH);
+   
+  }
 
-        totalInputs++;
-        updateProgressChart();
-        return currentWord.substring(0, currentWordLetterIndex).toUpperCase();
-    }
+  else if((flex1>900)&&(flex2>900)&&(flex3>900))
+  {
+   Serial.print("l");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
+    digitalWrite(m3,HIGH);
+   
+  }
 
-    function speakCharacter(text) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        window.speechSynthesis.speak(utterance);
-    }
 
-    function initProgressChart() {
-        const ctx = document.getElementById('progressChart').getContext('2d');
-        progressChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Accuracy (%)',
-                    data: [],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                }
-            }
-        });
-    }
+  else if((flex1>900)&&(flex3>900)&&(flex4>900))
+  {
+   Serial.print("m");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+  
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+  
+  }
+  
+  else if((flex1>900)&&(flex3>900)&&(flex5>900))
+  {
+   Serial.print("o");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+   
+    digitalWrite(m3,HIGH);
+   
+    digitalWrite(m5,HIGH);
+   
+  }
+  
+  else if((flex2>900)&&(flex3>900)&&(flex4>900))
+  {
+   Serial.print("s");digitalWrite(buzzer,HIGH);
+   
+    digitalWrite(m2,HIGH);
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+    
+  }
+  
+  else if((flex1>900)&&(flex3>900)&&(flex6>900))
+  {
+   Serial.print("u");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    
+    digitalWrite(m3,HIGH);
+    
+    digitalWrite(m6,HIGH);
+  }
 
-    function updateProgressChart() {
-        if (totalInputs > 0) {
-            const accuracy = (correctInputs / totalInputs) * 100;
-            progressChart.data.labels.push(totalInputs.toString());
-            progressChart.data.datasets[0].data.push(accuracy.toFixed(2));
-            progressChart.update();
-        }
-    }
+  else if((flex3>900)&&(flex4>900))
+  {
+   Serial.print(" ");digitalWrite(buzzer,HIGH);
+   
+    digitalWrite(m3,HIGH);
+    digitalWrite(m4,HIGH);
+   
+  }
 
-    document.getElementById("connectBtn").addEventListener("click", connectToSerial);
-    document.getElementById("modeSelect").addEventListener("change", (event) => {
-        mode = event.target.value;
-        document.getElementById("brailleOutput").textContent = "";
-        currentLetterIndex = 0;
-        correctInputs = 0;
-        totalInputs = 0;
-        progressChart.data.labels = [];
-        progressChart.data.datasets[0].data = [];
-        progressChart.update();
-    });
+  else if((flex1>900)&&(flex2>900))
+  {
+   Serial.print("b");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m2,HIGH);
+  }
+  
+  else if((flex1>900)&&(flex4>900))
+  {
+   Serial.print("c");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m4,HIGH);
+  }
 
-    initProgressChart();
-} else {
-    alert("Web Serial API not supported in this browser.");
+  else if((flex1>900)&&(flex5>900))
+  {
+   Serial.print("e");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m5,HIGH);
+  }
+  else if((flex1>900)&&(flex3>900))
+  {
+   Serial.print("k");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH);
+    digitalWrite(m3,HIGH);
+  }
+  else if((flex2>900)&&(flex4>900))
+  {
+   Serial.print("i");digitalWrite(buzzer,HIGH);
+   digitalWrite(m2,HIGH);
+   digitalWrite(m4,HIGH);
+  }
+  else if(flex1>900)  
+  {
+   Serial.print("a");digitalWrite(buzzer,HIGH);
+   digitalWrite(m1,HIGH); 
+  }
+  else
+  {
+   digitalWrite(buzzer,LOW);
+   digitalWrite(m1,LOW);
+   digitalWrite(m2,LOW);
+   digitalWrite(m3,LOW);
+   digitalWrite(m4,LOW);
+   digitalWrite(m5,LOW);
+   digitalWrite(m6,LOW);
+  }
+  delay(100);
+ }
+  delay(100);
+}
+
+void ff()
+{
+ Serial.print(flex1);
+ Serial.print("-");
+ Serial.print(flex2);
+ Serial.print("-");
+ Serial.print(flex3);
+ Serial.print("-");
+ Serial.print(flex4);
+ Serial.print("-");
+ Serial.print(flex5);
+ Serial.print("-");
+ Serial.println(flex6);  
+}
+
+void single()
+{
+  if(flex1>900)  
+  {
+   digitalWrite(m1,HIGH); 
+  }
+  else
+  {
+   digitalWrite(m1,LOW);
+  }
+  if(flex2>900)  
+  {
+   digitalWrite(m2,HIGH); 
+  }
+  else
+  {
+   digitalWrite(m2,LOW);
+  }
+  if(flex3>900)  
+  {
+   digitalWrite(m3,HIGH); 
+  }
+  else
+  {
+   digitalWrite(m3,LOW);
+  }
+  if(flex4>900)  
+  {
+   digitalWrite(m4,HIGH); 
+  }
+  else
+  {
+   digitalWrite(m4,LOW);
+  }
+  if(flex5>900)  
+  {
+   digitalWrite(m5,HIGH); 
+  }
+  else
+  {
+   digitalWrite(m5,LOW);
+  }
+  if(flex6>900)  
+  {
+   digitalWrite(m6,HIGH); 
+  }
+   else
+  {
+   digitalWrite(m6,LOW);
+  }
+  delay(200);  
 }
